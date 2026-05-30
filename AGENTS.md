@@ -52,21 +52,29 @@ If arXiv ID is provided:
 Example: `https://arxiv.org/src/2512.15745`
 
 **Action**:
-1. Create a directory named after the paper title (sanitize for filesystem safety) in the **repository root** (same level as this `opencode-paper-reader-arxiv/` folder)
-2. Download the LaTeX source (usually a `.tar.gz` archive)
-3. Extract the archive into the paper directory
-4. Create an `analysis_report/` subdirectory inside the paper directory for all AI-generated documents:
-   ```
-   PaperRead/                           # GitHub repo root
-   ├── opencode-paper-reader-arxiv/     # This project
-   │   ├── AGENTS.md
-   │   └── ...
-   ├── paper-title/                     # Downloaded paper
-   │   ├── [extracted latex source files]
-   │   └── analysis_report/
-   │       └── (AI-generated documents go here)
-   └── .git/                            # Git repository
-   ```
+1. Create a `papers/` directory in the **repository root** if it doesn't exist
+2. Inside `papers/`, create a directory named after the sanitized paper title (or `paper_<arxiv_id>`)
+3. Inside the paper directory, create two subdirectories:
+   - `src/` — for extracted LaTeX source files
+   - `analysis_report/` — for all AI-generated documents
+4. Download the LaTeX source using Python `requests` (NOT curl, as it may be blocked by security tools)
+5. Extract the `.tar.gz` archive into the `src/` subdirectory
+
+**Final Directory Structure**:
+```
+PaperRead/                                  # GitHub repo root
+├── AGENTS.md
+├── CLAUDE.md
+├── README.md
+├── scripts/
+│   └── download_arxiv.py                  # Python download helper
+├── papers/                                # All papers go here
+│   └── paper-title/                       # Named after paper (sanitized)
+│       ├── src/                           # Extracted LaTeX source files
+│       └── analysis_report/               # AI-generated documents
+│           └── summary.md
+└── .git/
+```
 
 **Sanitization Rules**:
 - Remove/replace characters invalid for directory names: `/\:*?"<>|`
@@ -167,12 +175,19 @@ Please analyze the paper and generate a summary in Chinese containing:
 ## File Structure Convention
 
 ```
-workspace/
-└── paper-title/                    # Named after paper (sanitized)
-    ├── [latex source files]         # Extracted from arXiv
-    ├── analysis_report/             # AI-generated documents
-    │   ├── summary.md               # Main comprehensive summary
-    │   └── [additional documents]   # Follow-up analysis, if any
+PaperRead/                                  # GitHub repo root
+├── AGENTS.md
+├── CLAUDE.md
+├── README.md
+├── scripts/
+│   └── download_arxiv.py                  # Python download helper
+├── papers/                                # All papers go here
+│   └── paper-title/                       # Named after paper (sanitized)
+│       ├── src/                           # Extracted LaTeX source files
+│       └── analysis_report/               # AI-generated documents
+│           ├── summary.md                 # Main comprehensive summary
+│           └── [additional documents]     # Follow-up analysis, if any
+└── .git/
 ```
 
 ---
@@ -209,11 +224,12 @@ workspace/
 1. Search arXiv for the title
 2. Confirm: "找到论文：LLaDA2.0: Scaling Up Diffusion Language Models to 100B (arXiv:2512.15745)，是否正确？"
 3. After confirmation, download source from `https://arxiv.org/src/2512.15745`
-4. Extract to `workspace/LLaDA2.0_Scaling_Up_Diffusion_Language_Models/`
-5. Create `analysis_report/` subdirectory
-6. Generate `summary.md` in Chinese
-7. Git commit and push
-8. Notify user: "论文分析完成！摘要已保存至 `analysis_report/summary.md` 并推送至 GitHub。"
+4. Create `papers/LLaDA2.0_Scaling_Up_Diffusion_Language_Models/` directory
+5. Extract source to `papers/LLaDA2.0_Scaling_Up_Diffusion_Language_Models/src/`
+6. Create `papers/LLaDA2.0_Scaling_Up_Diffusion_Language_Models/analysis_report/` subdirectory
+7. Generate `summary.md` in Chinese inside `analysis_report/`
+8. Git commit and push
+9. Notify user: "论文分析完成！摘要已保存至 `papers/LLaDA2.0_Scaling_Up_Diffusion_Language_Models/analysis_report/summary.md` 并推送至 GitHub。"
 
 **User**: "这个方法的核心公式是什么？"
 

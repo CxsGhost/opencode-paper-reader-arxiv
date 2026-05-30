@@ -16,7 +16,7 @@
 
 - 支持 AI Agent 的代码编辑器（如 Claude Code、OpenCode 等）
 - Git（用于推送到 GitHub）
-- curl（用于下载论文）
+- Python 3.x + requests（用于下载论文源码）
 
 ### 安装
 
@@ -65,7 +65,11 @@ opencode-paper-reader-arxiv/
 ├── CLAUDE.md              # Claude Code 兼容配置
 ├── README.md              # 本文件
 ├── scripts/
-│   └── download_arxiv.sh  # arXiv 下载辅助脚本
+│   └── download_arxiv.py  # Python 下载辅助脚本
+├── papers/                # 论文存放目录（自动生成）
+│   └── paper-title/
+│       ├── src/           # LaTeX 源码
+│       └── analysis_report/
 └── .gitignore             # Git 忽略配置
 ```
 
@@ -77,9 +81,9 @@ opencode-paper-reader-arxiv/
 - 处理同名论文冲突（询问用户）
 
 ### 2. 下载源码
-- 从 `https://arxiv.org/src/{id}` 下载 LaTeX 源码
-- 解压到以论文标题命名的目录
-- 创建 `analysis_report/` 子目录
+- 从 `https://arxiv.org/src/{id}` 使用 Python `requests` 下载 LaTeX 源码（避免 curl 被拦截）
+- 解压到 `papers/{title}/src/`
+- 创建 `papers/{title}/analysis_report/` 子目录
 
 ### 3. 生成摘要
 AI 阅读 LaTeX 源码后，生成包含以下内容的中文摘要：
@@ -102,16 +106,16 @@ AI 阅读 LaTeX 源码后，生成包含以下内容的中文摘要：
 
 ## 辅助脚本
 
-### download_arxiv.sh
+### download_arxiv.py
 
-用于手动下载 arXiv 论文源码：
+用于手动下载 arXiv 论文源码（Python + requests，避免 curl 被拦截）：
 
 ```bash
 # 下载到当前目录
-./scripts/download_arxiv.sh 2512.15745
+python scripts/download_arxiv.py 2512.15745
 
 # 下载到指定目录
-./scripts/download_arxiv.sh 2512.15745 ./my_papers
+python scripts/download_arxiv.py 2512.15745 ./papers
 ```
 
 ## 注意事项
