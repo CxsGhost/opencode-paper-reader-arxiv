@@ -1,0 +1,32 @@
+\begin{table}[!tb]
+\centering
+\renewcommand{\arraystretch}{1.2}
+\setlength\tabcolsep{2pt}
+\small
+\newcolumntype{C}{>{\centering\arraybackslash}X}
+
+\caption{Comparison of Text Rendering Ability on CVTG-2K Benchmark.}
+\begin{tabularx}{\linewidth}{ccc| *{5}{C}| CC} 
+\toprule
+\multirow{2}{*}{\textbf{Type}} & \multirow{2}{*}{\textbf{Model}} &\multirow{2}{*}{\textbf{Arch.}} & \multicolumn{5}{c|}{\textbf{Word Accuracy~$\uparrow$}} & \multirow{2}{*}{\textbf{NED~$\uparrow$}} & \multirow{2}{*}{\textbf{CLIPScore~$\uparrow$}} \\
+\cmidrule(lr){4-8}
+& & & 2 regions & 3 regions & 4 regions & 5 regions & average & & \\
+\midrule
+\multirow{5}{*}{\rotatebox[origin=c]{90}{Gen. Only}} 
+& FLUX.1 [Dev] & Diff. & 0.608 & 0.553 & 0.466 & 0.431 & 0.496 & 0.687 & 0.740 \\
+& Seedream 3.0 & Diff. &0.628 &0.596 &0.604 &0.561 & 0.592 &0.853 &0.782\\
+& Qwen-Image & Diff. & 0.837 &0.836 &0.831 &0.816 &0.829 &0.912 &0.802 \\
+& LongCat-Image & Diff. &0.912 &0.873 &0.855 &0.831 &0.865 &0.936 &0.785 \\
+& Z-Image-Turbo & Diff. &0.887 &0.866 &0.862 &0.834 &0.858 &0.928 &0.804\\
+\midrule
+\multirow{3}{*}{\rotatebox[origin=c]{90}{Unified}} 
+& BAGEL & AR + Diff. &0.498 &0.391 &0.332 &0.291 &0.356 &0.657 &0.779 \\
+& InternVL-U & AR + Diff. &0.729 &0.660 &0.618 &0.549 &0.623 &0.804 &0.816\\
+& Lumina-DiMOO & D-Diff. & 0.723 &0.646 &0.571 &0.505 &0.590  &0.805 &0.831 \\
+\rowcolor{myblue} 
+& LLaDA2.0-Uni & D-Diff. + Diff. & 0.788  & 0.776 & 0.763 & 0.746  &0.765  & 0.911  & 0.818\\
+\bottomrule
+\end{tabularx}
+\label{table:cvtg2k_rendering}
+\vspace{-0.15in}
+\end{table}

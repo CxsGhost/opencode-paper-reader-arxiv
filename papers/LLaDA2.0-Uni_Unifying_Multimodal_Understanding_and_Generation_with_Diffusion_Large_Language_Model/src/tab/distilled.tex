@@ -1,0 +1,47 @@
+Table~\ref{tab:distilled_perf} shows the performance and speed comparison between the Diffusion Decoder (50 steps) and Diffusion Decoder Turbo (8 steps) across five benchmarks. Speed is measured on a single GPU at $1024 \times 1024$ resolution with a batch size of 1, using BF16 precision.
+
+\begin{table}[!htb]
+\centering
+\setlength\tabcolsep{10pt}
+\renewcommand{\arraystretch}{1.0}
+\caption{Performance and Speed Comparison between Diffusion Decoder and Diffusion Decoder Turbo.}
+\resizebox{1.0\textwidth}{!}{%
+\begin{tabular}{cc|ccccc}
+\toprule
+\textbf{Method} & \textbf{Speed (s / img)}
+  & \textbf{GenEval} & \textbf{DPG} & \textbf{UniGenBench}
+  & \textbf{OneIG-EN}
+  & \textbf{WISE} 
+  \\ 
+\midrule
+Diffusion Decoder (50 steps)
+  & 32.95 & 0.89 & 87.76 & 79.63 & 0.505 & 0.68 \\
+\midrule
+Diffusion Decoder Turbo (8 steps)
+  & 2.90 & 0.87 & 87.24 & 79.76 &0.500 & 0.68  \\
+\bottomrule
+\end{tabular}%
+\label{tab:distilled_perf}
+}
+\end{table}
+
+Through few-step acceleration, the Diffusion Decoder Turbo achieves an 11.4$\times$ speedup (from 32.95\,s/img to 2.90\,s/img) while maintaining competitive performance across all benchmarks.
+%
+Specifically, it retains a GenEval score of 0.87 (vs.\ 0.89 for the base) and a DPG score of 87.24 (vs.\ 87.76). 
+%
+Similarly, on the UniGenBench, OneIG-EN, and WISE benchmarks, Diffusion Decoder Turbo achieves performance on par with the original decoder.
+%
+Moreover, as shown in Figure~\ref{fig:decoder_comp}, the visual quality remains virtually indistinguishable.
+
+\begin{figure}[!t]
+    \centering
+    \vspace{-0.1in}
+    \includegraphics[width=1.0\linewidth]{figs/decoder_comp.pdf}
+    \vspace{-0.23in}
+    \caption{Visual Comparison of the Decoder and the Distilled Version.}
+    \label{fig:decoder_comp}
+    \vspace{-0.13in}
+\end{figure}
+
+
+

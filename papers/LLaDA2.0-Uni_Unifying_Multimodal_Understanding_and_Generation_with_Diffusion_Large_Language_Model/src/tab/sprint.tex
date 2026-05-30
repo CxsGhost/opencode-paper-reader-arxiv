@@ -1,0 +1,42 @@
+\begin{table}[!b]
+\centering
+\vspace{-0.18in}
+\renewcommand{\arraystretch}{1.22}
+\caption{Performance and TPS comparison with and without SPRINT. (w/o SGLang)}
+\label{tab:sprint}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{cccccccccccccc}
+\toprule
+\textbf{Method} & \textbf{Metric}
+  & \textbf{AI2D} & \textbf{OCRB} & \textbf{MathVista}
+  & \textbf{ChartQA} & \textbf{DocVQA} & \textbf{MMMU}
+  & \textbf{MMStar} & \textbf{GenEval} & \textbf{DPG}
+  & \textbf{Avg.} & \textbf{$\Delta$} \\
+\midrule
+\multirow{2}{*}{LLaDA2.0-Uni}
+  & Score & 82.0 & 75.7 & 68.1 & 80.1 & 89.5 & 50.1 & 64.1 & 89.0 & 87.76 & 76.3 & -- \\
+  & TPS   & 19.5 & 21.2 & 55.0 & 28.7 & 8.0  & 49.4 & 31.7 & 2.8  & 2.7  & 24.3 & -- \\
+\midrule
+\multirow{2}{*}{\ \ + SPRINT}
+  & Score & 80.9 & 73.4 & 67.2 & 81.0 & 89.0 & 52.5 & 63.0 & 87.8 & 86.27 & 75.7 & $-$0.6 \\
+  & TPS   & 42.9 & 36.0 & 75.0 & 62.3 & 27.6 & 52.2 & 49.2 & 5.1  & 7.8  & 39.8 & $\times$1.6 \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+Table~\ref{tab:sprint} evaluates SPRINT on nine multimodal benchmarks, covering both understanding (AI2D, OCRBench, MathVista, ChartQA, DocVQA, MMMU, MMStar) and generation (GenEval, DPG). 
+%
+SPRINT shifts the average score from 76.3 to 75.7 ($-$0.6) while accelerating generation from 24.3 to 39.8 TPS ($1.6\times$). 
+%
+Several benchmarks show score decreases; the most notable are OCRBench ($-2.3$) and DPG ($-1.5$).
+%
+OCRBench demands precise character-level prediction, where the lower threshold $\tau = 0.93$ may accept tokens before sufficient refinement. 
+%
+The speedup is largest on benchmarks with longer outputs, where the per-step savings from prefix pruning compound across many denoising iterations: DocVQA reaches $3.5\times$ (8.0 $\to$ 27.6), and ChartQA and AI2D both reach $2.2\times$.
+%
+SPRINT improves MMMU by +2.4 and ChartQA by +0.9. 
+%
+The non-uniform unmasking schedule concentrates refinement on uncertain positions, effectively increasing the denoising budget for difficult tokens without additional forward passes.
+%
+Furthermore, we are integrating LLaDA2.0-Uni with SGLang~\citep{Sglang} to accelerate inference, and the implementation will be made publicly available soon.

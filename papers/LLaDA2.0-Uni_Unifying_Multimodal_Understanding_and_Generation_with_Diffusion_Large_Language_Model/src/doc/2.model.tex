@@ -1,0 +1,132 @@
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=1.0\linewidth]{figs/architecture.pdf}
+    \vspace{-0.25in}
+    \caption{Architecture Overview of LLaDA2.0-Uni.
+    The framework integrates a SigLIP-VQ tokenizer and a language model decoder to process multimodal inputs, including text, image, and video.
+    }
+    \label{fig:unillada}
+\end{figure}
+
+
+\section{Model Design}
+\subsection{Motivation and Design Principles}
+We aim to extend the dLLM architecture into a unified model for multimodal understanding and generation, leveraging its advantages in parallel decoding and bidirectional context modeling.
+%
+Prior approaches to this goal exhibit notable limitations.
+%
+MMaDA~\citep{Mmada} and Lumina-DiMOO~\citep{dimoo} rely on reconstructed visual tokens from VQ-VAE, which degrades understanding performance and yields sub-optimal visual quality.
+%
+LLaDA-o~\citep{you2026lladao} and BAGEL~\citep{bagel} adopt decoupled visual modules (ViT for understanding, VAE for generation), introducing a modeling gap and divergent optimization objectives within the same model.
+%
+To overcome these limitations, we design LLaDA2.0-Uni around a key principle: \emph{use fully discrete semantic tokens for both understanding and generation}.
+%
+This unified representation eliminates the need for heterogeneous encoders and enables end-to-end training under a single mask prediction objective, as illustrated in Figure~\ref{fig:unillada}.
+
+\subsection{Architecture}
+LLaDA2.0-Uni consists of three core components: (1) a SigLIP-VQ tokenizer that converts images into discrete semantic tokens, (2) a 16B MoE diffusion language model that processes both text and visual tokens under a unified mask prediction objective, and (3) a diffusion decoder that reconstructs semantic tokens into high-fidelity images.
+%
+This design enables end-to-end training and inference for both understanding and generation tasks within a single coherent framework.
+
+\subsubsection{Semantic Discrete Tokenizer}
+The tokenizer adopts a SigLIP-VQ architecture building upon X-Omni~\citep{xomni} to convert continuous images into discrete tokens. 
+%
+Unlike standard VQ-VAEs~\citep{esser2021taming,wang2024emu3} that rely on pixel-level reconstruction, SigLIP-VQ is trained directly on understanding tasks, thereby preserving rich semantic information.
+%
+Consequently, it demonstrates a clear advantage over reconstruction-based VQ-VAEs in multimodal understanding tasks.
+%
+Specifically, the tokenizer utilizes a pre-trained SigLIP2-g ViT~\citep{tschannen2025siglip} as the visual feature extractor and supports dynamic resolution processing.
+%
+Following the ViT encoder, a vector quantizer aligns the visual representations with a pre-trained large language model, featuring a codebook with a vocabulary size of 16,384 and a dimensionality of 2,048.
+%
+While SigLIP-VQ excels in semantic extraction, it lacks a native mechanism to reconstruct images from these discrete tokens.
+%
+We address this by designing a custom diffusion decoder, detailed in Section~\ref{sec:diffusion_decoder}.
+
+\subsubsection{Diffusion Large Language Model}
+\paragraph{MoE Backbone for Multi-Modal Capacity.}
+A modality-agnostic Mixture-of-Experts (MoE) architecture enables language backbones to serve as universal multi-task learners, dynamically allocating capacity across modalities without the need for modality-specific designs.
+%
+We adopt LLaDA-2.0-mini~\citep{LLaDA2} as our dLLM backbone, an MoE architecture with 16B total parameters.
+%
+To integrate visual information, we expand the original dLLM vocabulary by appending tokens from the SigLIP-VQ codebook, along with a set of custom special tokens for image generation and understanding.
+%
+In the input embedding layer, we retain the pre-trained language embeddings while randomly initializing the new visual token embeddings.
+%
+Similarly, the final prediction head is expanded to accommodate the enlarged vocabulary, with the language-specific portion initialized from pre-trained weights to preserve linguistic proficiency.
+
+
+\paragraph{Block-wise Attention for Training Stability.}
+For dLLMs, full bidirectional attention is theoretically ideal for parallel sampling.
+%
+However, prior studies~\citep{LLaDA,Mmada,dimoo} show that unconstrained full attention often degrades performance.
+%
+We adopt a block-wise attention scheme~\citep{arriola2025block} to balance quality and efficiency.
+%
+This design is particularly important for SigLIP-VQ tokens: since they are semantically aligned with Qwen2.5, they inherit an autoregressive bias that would be disrupted by pure full-attention.
+%
+By constraining attention within predefined blocks and selectively enabling it across blocks, we maintain parallel decoding speed while achieving strong performance in both language and visual tasks.
+\looseness=-1
+
+\paragraph{Positional Embedding \& Arbitrary Resolution.} 
+Rotary Position Embedding (RoPE)~\citep{su2021roformer} is a standard choice in LLMs due to its flexibility and scalability. 
+%
+While many recent unified models adopt 2D RoPE for images~\citep{cao2025hunyuanimage,bagel}, we keep the original 1D RoPE structure for simplicity.
+%
+To represent 2D spatial information, we add special \texttt{<height>} and \texttt{<width>} tokens (e.g., \texttt{<imgsize\_512>}) before the flattened 1D visual sequence.
+%
+Previous studies~\citep{liu2026lumina,xin2025lumina,xomni} confirm that this simple approach is highly effective.
+%
+These size tokens also enable the model to handle arbitrary image resolutions without architectural changes.
+
+
+\subsubsection{Diffusion Decoder}
+\label{sec:diffusion_decoder}
+Semantic VQ requires a specialized decoder to map features from the semantic space back to the image space, unlike traditional reconstruction-based VQ that can directly use a pixel decoder.
+%
+We introduce a diffusion model built upon Z-Image-Base~\citep{cai2025z}, a 6B pre-trained text-to-image model.
+%
+Once the dLLM generates image tokens, they serve as the conditioning signal, replacing conventional text prompts.
+%
+This differs from existing methods like NextFlow~\citep{zhang2026nextflow} and X-Omni~\citep{xomni}, which redundantly combine text prompts with visual tokens.
+%
+Beyond basic decoding, our diffusion model performs $2\times$ super-resolution, using upsampled semantic tokens as the sole conditioning input.
+%
+To address the computational cost of 50-step sampling with CFG, we employ model distillation to achieve 8-step CFG-free inference (Section~\ref{sec:decoder_training}).
+%
+Together, the SigLIP-VQ tokenizer, dLLM backbone, and diffusion decoder form a unified pipeline where understanding and generation share the same discrete token representation.
+
+
+
+\subsection{Training-free Inference Acceleration}
+\label{sec:sprint}
+
+Block-wise discrete diffusion language models require $B \times T$ forward passes to generate $B$ blocks with $T$ denoising steps each. Uniform KV cache eviction and fixed-schedule step reduction degrade quality in multimodal settings due to heterogeneous per-token difficulty and differing information density across modalities. We propose \textbf{SPRINT} (\textbf{S}parse \textbf{P}refix \textbf{R}etention with \textbf{I}nference-time \textbf{N}on-uniform \textbf{T}oken Unmasking), a training-free framework that reduces cost along two orthogonal axes. \emph{Sparse Prefix Retention} prunes the prefix KV cache in a modality-aware manner to lower per-step cost. \emph{Non-uniform Token Unmasking} replaces the fixed denoising schedule with confidence-adaptive unmasking to reduce the step count. Together the two components achieve up to $1.6\times$ speedup with negligible quality loss (Section~\ref{sec:sprint_ablation}).
+
+
+\noindent
+\textbf{Sparse Prefix Retention.}\label{sec:sprint_spr}
+Each denoising step attends to the full prefix, whose quadratic attention cost dominates as the generated sequence lengthens.
+SPRINT constructs a pruned prefix KV cache once per block, so that all subsequent steps attend to a much shorter effective sequence.
+
+The first step of each block performs a full forward pass to obtain logits and a complete KV cache.
+Each prefix position $i$ is then scored by a composite importance measure that blends the \emph{key-norm importance} $\bar{I}_i$, reflecting how strongly a position influences the attention distribution, with the \emph{token confidence} $c_i$, capturing the model's prediction certainty at that position:
+\begin{equation}\label{eq:sprint_importance}
+    s_i \;=\; \alpha \cdot \bar{I}_i \;+\; (1 - \alpha) \cdot c_i \,,
+\end{equation}
+where $\bar{I}_i = {\|\mathbf{k}_i\|_2}\big/\bigl({\frac{1}{L}\sum_{j=1}^{L}\|\mathbf{k}_j\|_2}\bigr)$ is the mean-normalized key norm, $c_i = \max_{v}\, p_\theta(v \mid \mathbf{x}_t)$ is the top-1 softmax confidence, and $\alpha = 0.5$.
+
+The pruning is \emph{modality-aware}: we maintain separate keep ratios $r_{\text{text}}$ and $r_{\text{img}}$ rather than a single uniform ratio, because image tokens exhibit high spatial redundancy and tolerate aggressive pruning, whereas text tokens carrying instructions or reasoning chains do not.
+Within each modality, the top-$\lfloor r \cdot n \rfloor$ positions by $s_i$ are retained and the rest are evicted.
+We explore two settings: \emph{selective image pruning} with $r_{\text{text}} = 1.0, r_{\text{img}} = 0.8$, and \emph{full prefix retention} with $r_{\text{text}} = r_{\text{img}} = 1.0$.
+The global keep ratio is $r = 0.5$ in both cases.
+
+\noindent
+\textbf{Non-uniform Token Unmasking.}\label{sec:sprint_ntu}
+The standard denoising schedule unmasks a fixed $\lceil m / T \rceil$ tokens per regardless of prediction certainty, wasting computation on confident predictions and under-allocating it to uncertain ones.
+SPRINT replaces this schedule with a confidence-adaptive strategy. For all $m$ masked positions the model computes per-position confidence $c_n = p_\theta(\hat{x}_0^n \mid \mathbf{x}_t)$ and accepts every position whose confidence exceeds a threshold $\tau$ in a single step.
+\begin{equation}\label{eq:adaptive_fast}
+    \mathcal{A} \;=\; \bigl\{\,n \in [m] : c_n > \tau \,\bigr\} \,.
+\end{equation}
+A minimum of $\lceil m / (T - t) \rceil$ acceptances is enforced at each step to guarantee termination. We examine $\tau \in \{0.93, 0.95\}$.
+

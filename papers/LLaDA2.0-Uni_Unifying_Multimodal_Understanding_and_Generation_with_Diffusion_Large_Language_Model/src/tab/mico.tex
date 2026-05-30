@@ -1,0 +1,29 @@
+\begin{table}[!tb]
+\centering
+\renewcommand{\arraystretch}{1.2}
+\setlength\tabcolsep{3pt}
+\small
+\newcolumntype{C}{>{\centering\arraybackslash}X}
+
+\caption{Comparison of Multi-Reference Image Editing Ability on MICo-Bench.}
+\begin{tabularx}{\linewidth}{cc| *{4}{C}|c} 
+\toprule
+
+\textbf{Model} & \textbf{Arch.} & \textbf{Object} &\textbf{Person} &\textbf{HOI} &\textbf{De\&Re} &\textbf{~Overall$\uparrow$} \\
+
+\midrule
+Qwen-Image-Edit & Diff. & 52.4  & 21.1 & 35.0 & 37.4 & 35.9 \\
+
+BAGEL & AR + Diff. & 39.0 & 28.5 & 25.3 & 44.5 & 34.4 \\
+
+OmniGen2 & AR + Diff. & 46.3 & 22.9 & 32.2 & 36.8 & 33.8 \\
+
+Lumina-DiMOO & D-Diff. & 38.4 & 12.1 & 24.7 & 21.3 & 23.3 \\
+\rowcolor{myblue}
+
+LLaDA2.0-Uni &D-Diff. + Diff. &51.0 &32.8 &46.0 &54.4 &47.1  \\
+\bottomrule
+\end{tabularx}
+\label{table:mico-bench}
+\vspace{-0.15in}
+\end{table}

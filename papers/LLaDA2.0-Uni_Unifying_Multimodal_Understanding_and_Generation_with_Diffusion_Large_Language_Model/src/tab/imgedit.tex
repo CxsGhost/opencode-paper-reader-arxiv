@@ -1,0 +1,31 @@
+\begin{table}[!tb]
+\centering
+\renewcommand{\arraystretch}{1.2}
+\setlength\tabcolsep{1.5pt}
+\footnotesize % 调小字号以适应多列宽度
+\newcolumntype{C}{>{\centering\arraybackslash}X}
+\caption{Comparison of Instruction-based Image Editing Ability on ImgEdit Benchmark.}
+\begin{tabularx}{\linewidth}{cc| *{9}{C} |c} 
+\toprule
+\textbf{Type} & \textbf{Model} & \textbf{Add} & \textbf{Adjust} &\textbf{Extract} &\textbf{Replace} &\textbf{Remove} &\textbf{Back.} &\textbf{Style} &\textbf{Hybrid} &\textbf{Action}
+&\textbf{Overall $\uparrow$} \\
+\midrule
+\multirow{4}{*}{\rotatebox[origin=c]{90}{Gen. Only}} 
+& FLUX.1 Kontext & 4.25 & 4.15 & 2.35 & 4.56 & 3.57 & 4.26 & 4.57 & 3.68 & 4.63 & 4.00 \\
+& Step1X-Edit &3.88 &3.14 &1.76 &3.40 &2.41 &3.16 &4.63 &2.64 &2.52 &3.06 \\
+& Qwen-Image-Edit &4.32 &4.36 &4.04 &4.64 &4.52 &4.37 &4.84 &3.39 &4.71 &4.35 \\
+& Z-Image-Edit &4.40 &4.14 &4.30 &4.57 &4.13 &4.14 &4.85 &3.63 &4.50 &4.30 \\
+
+\midrule
+\multirow{5}{*}{\rotatebox[origin=c]{90}{Unified}} 
+& BAGEL & 3.56 & 3.31 & 1.70 & 3.30 & 2.62 & 3.24 & 4.49 & 2.38 & 4.17 & 3.20 \\
+& OmniGen2 & 3.57 & 3.06 & 1.77 & 3.74 & 3.20 & 3.57 & 4.81 & 2.52 & 4.68 & 3.44 \\
+& InternVL-U &4.13 &3.40 &2.27 &4.13 &3.39 &3.84 &4.77 &3.03 &4.05 &3.67\\
+& Lumina-DiMOO &3.41 &2.38 &1.90 &3.26 &2.21 &2.11 &4.19 &2.26 &3.17 &2.77\\
+\rowcolor{myblue} 
+& LLaDA2.0-Uni &3.76 &4.16 &2.40 & 4.04 & 3.82 & 4.07 & 4.60 & 3.97 & 4.42 & 3.92 \\
+\bottomrule
+\end{tabularx}
+\label{table:imgedit_results}
+\vspace{-0.15in}
+\end{table}

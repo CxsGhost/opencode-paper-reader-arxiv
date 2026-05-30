@@ -1,0 +1,35 @@
+\begin{table}[!tb]
+\centering
+\renewcommand{\arraystretch}{1.2}
+\setlength\tabcolsep{3pt}
+\small
+\newcolumntype{C}{>{\centering\arraybackslash}X}
+
+\caption{Comparison of Text-to-Image Generation Ability on OneIG-EN Benchmark.}
+\begin{tabularx}{\linewidth}{ccc| *{5}{C}|c} 
+\toprule
+\textbf{Type} & \textbf{Model} & \textbf{Arch.} & \textbf{Alignment} &\textbf{Text} &\textbf{Reasoning} &\textbf{Style} &\textbf{Diversity} &\textbf{~Overall$\uparrow$} \\
+\midrule
+\multirow{5}{*}{\rotatebox[origin=c]{90}{Gen. Only}} 
+& FLUX.1 [Dev] & Diff. & 0.786 & 0.523 & 0.253 & 0.368 & 0.238 & 0.434 \\
+& Lumina-Image 2.0 & Diff. & 0.819 &0.106 &0.270 & 0.354 &0.216 & 0.353 \\
+& Seedream 3.0 & Diff. &0.818 &0.865 &0.275 &0.413 &0.277 &0.530 \\
+& Qwen-Image & Diff. &0.882 &0.891 &0.306 &0.418 &0.197 &0.539 \\
+& Z-Image-Turbo & Diff. &0.840 &0.994 &0.298 &0.368 &0.139 &0.528 \\
+
+\midrule
+\multirow{6}{*}{\rotatebox[origin=c]{90}{Unified}} 
+& Janus-Pro & AR & 0.553 & 0.001 & 0.139 & 0.276 & 0.365 & 0.267 \\
+& BAGEL & AR + Diff. & 0.769 & 0.244 & 0.173 & 0.367 & 0.251 & 0.361 \\
+& OmniGen2 & AR + Diff. & 0.804 &0.680 &0.271 &0.377 &0.242 &0.475 \\
+& InternVL-U & AR + Diff. &0.820 &0.740 &0.270 &0.400 &0.250 &0.500\\
+% & MMaDA \\
+& Lumina-DiMOO & Diff. &0.820& 0.550& 0.280& 0.400& 0.230 & 0.460  \\
+% & LLaDA-o \\
+\rowcolor{myblue}
+&LLaDA2.0-Uni &D-Diff. + Diff. &0.882 & 0.661 &0.323 &0.400 &0.259 &0.505 \\
+\bottomrule
+\end{tabularx}
+\label{table:oneig_en}
+\vspace{-0.06in}
+\end{table}

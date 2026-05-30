@@ -1,0 +1,33 @@
+\begin{table}[!tb]
+\centering
+\renewcommand{\arraystretch}{1.2}
+\setlength\tabcolsep{2pt}
+\small
+\newcolumntype{C}{>{\centering\arraybackslash}X}
+\vspace{-0.1in}
+\caption{Comparison of Instruction-based Image Editing Ability on GEdit Benchmark. Abbreviations: Semantic Consistency (G\_SC), Perceptual Quality (G\_PQ), and Overall Score (G\_O).}
+\begin{tabularx}{\linewidth}{ccc| *{3}{C} | *{3}{C}} 
+\toprule
+\multirow{2}{*}{\textbf{Type}} & \multirow{2}{*}{\textbf{Model}} & \multirow{2}{*}{\textbf{Arch.}} & \multicolumn{3}{c|}{\textbf{GEdit-Bench-EN$\uparrow$}} & \multicolumn{3}{c}{\textbf{GEdit-Bench-CN$\uparrow$}} \\
+\cmidrule(lr){4-6} \cmidrule(lr){7-9}
+& & & \textbf{G\_SC} & \textbf{G\_PQ} & \textbf{G\_O} & \textbf{G\_SC} & \textbf{G\_PQ} & \textbf{G\_O} \\
+\midrule
+\multirow{5}{*}{\rotatebox[origin=c]{90}{Gen. Only}} 
+& FLUX.1 Kontext & Diff. & 6.52 & 7.38 &  6.00 & - & - & - \\
+& Step1X-Edit & Diff. &7.66 &7.35 &6.97 &7.20 &6.87 &6.86 \\
+& Qwen-Image-Edit & Diff. &8.00 & 7.86 & 7.56 & 7.82 & 7.79 & 7.52\\
+&LongCat-Image-Edit & Diff. &8.18 &8.00 &7.64 &8.08 &7.99 &7.60 \\
+&Z-Image-Edit & Diff. &8.11 &7.72 &7.57 &8.03 &7.80 &7.54 \\
+\midrule
+\multirow{5}{*}{\rotatebox[origin=c]{90}{Unified}} 
+& BAGEL & AR + Diff. & 7.36 & 6.83 & 6.52 & 7.34 & 6.85 & 6.50 \\
+& OmniGen2 & AR + Diff. & 7.16 & 6.77 & 6.41 & - & - & - \\
+& InternVL-U & AR + Diff. & - & - & 6.66 & - & - & -\\
+& Lumina-DiMOO  & D-Diff. &- &- &3.91 &- &- & -\\
+\rowcolor{myblue} 
+& LLaDA2.0-Uni & D-Diff. + Diff. &6.68 &7.52 &6.61 &6.63 &7.67 &6.66 \\
+\bottomrule
+\end{tabularx}
+\label{table:gedit_bench}
+\vspace{-0.08in}
+\end{table}

@@ -1,0 +1,246 @@
+\section{Experiments}
+\subsection{Multimodal Understanding}
+\subsubsection{Evaluation Settings}
+\paragraph{Benchmarks.} We evaluate LLaDA2.0-Uni across 21 multimodal understanding benchmarks, focusing on three core capabilities: general VQA, reasoning, and OCR/document understanding:
+\begin{itemize}[leftmargin=16pt]
+    \item \textbf{General Tasks:}
+    MMStar~\citep{mmstar}, MMBench~\citep{Mmbench}, MME~\citep{fu2023mme}, HallusionBench~\citep{Hallusionbench},  RealWorldQA~\citep{RealworldQA} and SimpleVQA~\citep{Simplevqa}.
+    \item \textbf{Reasoning Tasks:} 
+    MMMU~\citep{yue2024mmmu}, and MMMU-Pro~\citep{yue2025mmmupro}, MathVista~\citep{mathvista}, We-Math~\citep{We-math}, MathVision~\citep{wang2024measuring}, and MathVerse~\citep{zhang2024mathverse}.
+    \item \textbf{OCR\&Chart Tasks:} 
+    ChartQA~\citep{Chartqa}, DocVQA~\citep{Docvqa}, InfoVQA~\citep{InfoVQA}, CharXiv~\citep{Charxiv}, OCRBench~\citep{Ocrbench}, and AI2D~\citep{AI2D}.
+    \item \textbf{Other Multimodal Tasks:}
+    CountBench~\citep{countbench}, VLRewardBench~\citep{VLRewardBench}, and V$^*$~\citep{vstar}.
+\end{itemize}
+
+\paragraph{Baselines.} 
+To evaluate the multimodal performance of LLaDA2.0-Uni, we compare it against an extensive set of baselines.
+%
+We first compare LLaDA2.0-Uni with leading specialized VLMs, including Qwen2.5-VL-7B~\citep{bai2025qwen2} (AR-based) and LLaDA-V~\citep{you2025llada} (diffusion-based).
+%
+Furthermore, we evaluate LLaDA2.0-Uni against state-of-the-art unified models categorized into: 1) AR-based models, such as BAGEL~\citep{bagel} and InternVL-U~\citep{tian2026internvl}; and 2) diffusion-based models, such as Lumina-DiMOO~\citep{dimoo} and LLaDA-o~\citep{you2026lladao}.
+
+\subsubsection{Multimodal Understanding Performance}
+As shown in Table~\ref{tab:understanding}, LLaDA2.0-Uni demonstrates strong and comprehensive multimodal understanding capabilities.
+%
+Compared to existing diffusion-based unified models like Lumina-DiMOO and LLaDA-o, LLaDA2.0-Uni achieves significant improvements across all major categories, particularly in general VQA tasks (e.g., MMStar: 64.1 vs. 58.0) and complex reasoning tasks (e.g., MMMU: 50.1 vs. 44.9).
+%
+Furthermore, LLaDA2.0-Uni also delivers consistently high performance in challenging OCR and document understanding scenarios, where baselines like Lumina-DiMOO struggle significantly.
+%
+Most impressively, LLaDA2.0-Uni performs on par with state-of-the-art specialized VLMs such as Qwen2.5-VL-7B, even slightly outperforming it on specific metrics like MMStar (64.1 vs. 63.9) and CountBench (86.0 vs. 84.9).
+%
+Overall, these results confirm that LLaDA2.0-Uni closes the gap between unified diffusion architectures and top-tier specialized VLMs.
+
+\input{tab/understanding}
+
+\subsection{Text-to-Image Generation}
+\subsubsection{Evaluation Settings}
+\paragraph{Benchmarks.} 
+We conduct a comprehensive evaluation using a suite of established public benchmarks, including GenEval~\citep{ghosh2023geneval}, DPG-Bench~\citep{hu2024ella}, One-IG Bench~\cite{chang2025oneig}, and UniGenBench~\cite{UniGenBench++} for general generative capabilities, as well as CVTG-2K~\citep{du2025textcrafter} for text rendering proficiency. 
+%
+To further evaluate reasoning-informed image generation, we also test LLaDA2.0-Uni on the WISE-Bench~\citep{niu2025wise}. 
+
+\paragraph{Baselines.} To comprehensively assess the text-to-image generation capabilities of LLaDA2.0-Uni, we benchmark our model against a diverse spectrum of strong baselines.
+%
+We first compare LLaDA2.0-Uni with leading specialized generation models (Gen. Only), including diffusion models like FLUX.1 [Dev]~\citep{flux}, Lumina-Image 2.0~\citep{qin2025lumina}, Seedream 3.0~\citep{gao2025seedream}, Qwen-Image~\citep{wu2025qwen}, LongCat-Image~\citep{team2025longcat}, and Z-Image~\citep{cai2025z}, as well as AR-based models like Emu3~\citep{wang2024emu3} and Lumina-mGPT 2.0~\citep{xin2025lumina}.
+%
+Furthermore, we evaluate LLaDA2.0-Uni against state-of-the-art unified models categorized into: 
+%
+1) AR-based and hybrid (AR + Diff.) models, including Janus-Pro~\citep{Janus}, BAGEL~\citep{bagel}, and OmniGen2~\citep{wu2025omnigen2}, Hunyuan Image 3.0~\citep{cao2025hunyuanimage}, NextFlow~\citep{zhang2026nextflow}, and InternVL-U~\citep{tian2026internvl}; 
+%
+and 2) discrete diffusion (D-Diff.) and hybrid diffusion (D-Diff. + Diff.) models, including MMaDA~\citep{Mmada}, Lumina-DiMOO~\citep{dimoo} and LLaDA-o~\citep{you2026lladao}.
+
+\input{tab/geneval}
+
+\input{tab/dpg}
+
+\input{tab/one-ig}
+
+\input{tab/unigen-bench}
+
+\input{tab/CVTG-2K}
+
+\input{tab/wise}
+
+
+\subsubsection{General Image Generation Performance}
+\paragraph{GenEval.} Table~\ref{table:geneval} presents a comparison of model performance on the GenEval benchmark, which is designed to evaluate object-centric T2I generation using compositional prompts with diverse object attributes. 
+%
+LLaDA2.0-Uni demonstrates strong compositional capabilities, achieving an overall score of 0.89.
+%
+This performance is highly competitive, significantly outperforming all unified models and bridging the gap with top-tier generation-only models.
+%
+In particular, LLaDA2.0-Uni shows a clear advantage in spatial arrangement, securing the highest Position score (0.90) across all evaluated models.
+
+
+
+
+\paragraph{DPG-Bench.} Table~\ref{table:dpg_benchmark} reports the text-to-image generation results on the DPG benchmark.
+%
+Notably, LLaDA2.0-Uni achieves the state-of-the-art overall score of 87.76 among unified models, outperforming strong baselines such as LLaDA-o (87.04) and HunyuanImage-3.0 (86.10).
+%
+Specifically, our model secures the highest scores on the Entity (93.55) and Other (94.04) sub-metrics.
+%
+Furthermore, LLaDA2.0-Uni delivers highly competitive performance even against specialized generation-only models, surpassing Z-Image-Turbo (84.86) and demonstrating robust text-image alignment capabilities.
+
+
+\paragraph{One-IG Bench.} As shown in Table~\ref{table:oneig_en}, LLaDA2.0-Uni achieves a highly competitive overall score of 0.505 on OneIG-EN.
+%
+Notably, it outperforms all other unified models in Alignment (0.882) and Reasoning (0.323), reaching levels comparable to top dedicated generation models like Qwen-Image.
+%
+However, LLaDA2.0-Uni falls short of leading models in generating dense text, indicating an area for future improvement.
+
+\paragraph{UniGenBench.} LLaDA2.0-Uni sets a new standard for unified models on UniGenBench (EN), achieving a top overall score of 79.63 (Table~\ref{table:unigen}).
+%
+It performs consistently well across all ten dimensions, showing a clear advantage in Logic (63.99) and Layout (90.30), where it even surpasses many specialized generation models.
+%
+These results demonstrate that LLaDA2.0-Uni effectively closes the performance gap between general-purpose unified models and top-tier specialized models.
+
+
+\subsubsection{Text-Centric Image Generation Performance}
+\paragraph{CVTG-2k.}
+The CVTG-2K benchmark evaluates the capability of the model for text rendering across multiple regions.
+%
+As reported in Table~\ref{table:cvtg2k_rendering}, LLaDA2.0-Uni leads the unified models with an overall score of 0.765.
+%
+A key observation is its exceptional stability in multi-region text generation.
+%
+While baselines like BAGEL, Lumina-DiMOO, and InternVL-U show a sharp performance drop when the number of regions increases, our model experiences a much slower decline.
+
+
+\subsubsection{Reasoning-Informed Image Generation Performance}
+\paragraph{WISE-Bench.} 
+The benefits of our large-scale multimodal pre-training are evident on the WISE benchmark (Table~\ref{table:wise_benchmark}), which evaluates complex semantic understanding and world knowledge in image generation.
+%
+LLaDA2.0-Uni achieves a strong overall score of 0.68, ranking first among all unified models and performing on par with generation-only models like LongCat-Image.
+%
+% It also matches the performance of generation-only models like Qwen-Image.
+%
+Notably, incorporating a reasoning mode yields an additional 10\% improvement. 
+%
+These results highlight the strong capability of LLaDA2.0-Uni in reasoning-informed generation.
+
+
+\input{tab/imgedit}
+
+\input{tab/gedit-bench}
+
+\input{tab/mico}
+
+\subsection{Image Editing}
+\subsubsection{Evaluation Settings}
+\paragraph{Benchmarks.}
+We evaluate LLaDA2.0-Uni on two general instruction-based image editing benchmarks: ImgEdit-Bench~\citep{ye2025imgedit} and GEdit-Bench~\citep{liu2025step1x-edit}. 
+%
+Additionally, we provide qualitative comparisons against leading models on MICo-Bench~\citep{wei2025mico}, a challenging multi-reference image editing benchmark.
+
+\paragraph{Baselines.} 
+We evaluate LLaDA2.0-Uni against specialized editing models (FLUX.1 Kontext~\citep{labs2025flux1kontextflowmatching}, Step1X-Edit~\citep{liu2025step1x-edit}, Qwen-Image-Edit~\citep{wu2025qwen}, Z-Image-Edit~\citep{cai2025z}) and unified models (BAGEL~\citep{bagel}, OmniGen2~\citep{wu2025omnigen2}, InternVL-U~\citep{tian2026internvl}, Lumina-DiMOO~\citep{dimoo}).
+%
+For the multi-reference editing benchmark, we compare with BAGEL, Qwen-Image-Edit, and OmniGen2, as they are the only baselines that natively support multiple image inputs.
+
+
+
+
+\subsubsection{General Image Editing Performance}
+\paragraph{ImgEdit.} Table~\ref{table:imgedit_results} presents the instruction-based image editing performance on the ImgEdit benchmark.
+%
+Among unified models, LLaDA2.0-Uni achieves the best Overall score of 3.92, ranking first and significantly outperforming peers like OmniGen2 (3.44) and InternVL-U (3.67).
+%
+Notably, LLaDA2.0-Uni excels in the Adjust and Hybrid tasks, securing the highest scores within the unified category. 
+%
+These results underscore its robust capability to comprehend and execute intricate editing instructions.
+
+\paragraph{GEdit-Bench.} 
+To further assess complex image editing capabilities, we evaluate our model on the GEdit benchmark.
+%
+As detailed in Table~\ref{table:gedit_bench}, LLaDA2.0-Uni achieves solid overall scores across both English (6.61) and Chinese (6.66) evaluations.
+%
+A key highlight is its strong performance in the Perceptual Quality category, proving that the model can execute edits without sacrificing the visual quality of the original image.
+
+
+\subsubsection{Multi-Reference Image Editing Performance}
+\paragraph{MICo-Bench.} 
+To evaluate the multi-reference image composition capabilities of LLaDA2.0-Uni, we conduct experiments on the MICo-Bench.
+%
+As shown in Table~\ref{table:mico-bench}, LLaDA2.0-Uni achieves the best overall performance, setting a new state-of-the-art on this benchmark with a score of 47.1.
+%
+It significantly outperforms strong baselines such as OmniGen2 (33.8) and Qwen-Image (35.9).
+%
+Notably, Lumina-DiMOO, which shares the same dLLM architecture, struggles significantly on this task, yielding an overall score of only 23.3.
+%
+This stark contrast clearly validates the effectiveness of our architecture and data pipeline.
+
+
+\subsection{Interleaved}
+\subsubsection{Interleaved Generation}
+\paragraph{Benchmark Construction.} 
+Existing models like Bagel and Nextflow support interleaved generation, yet a standard benchmark remains absent.
+%
+Datasets like ISG-BENCH~\citep{chen2024interleaved} and OpenING~\citep{zhou2025opening} contain interleaved cases but specialized tasks (e.g., 3D scene transformation) that most models cannot process.
+%
+To address this, we propose the InterGen benchmark.
+%
+As shown in Figure~\ref{fig:intergen}, it is structured into three main categories and various subcategories to comprehensively cover practical interleaved applications.
+%
+InterGen comprises 150 samples and utilizes advanced VLMs (Gemini-3 and Qwen3-VL) as a judge to assess performance across three dimensions: text coherence, text-image alignment, and ID consistency.
+
+
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=1.0\linewidth]{figs/intergen.pdf}
+    \caption{Overview of InterGen Benchmark.
+    }
+    \label{fig:intergen}
+    \vspace{-0.1in}
+\end{figure}
+
+\begin{figure}[tb]
+    \centering
+    \includegraphics[width=1.0\linewidth]{figs/interleave_generation.pdf}
+    \vspace{-0.25in}
+    \caption{Qualitative Results on Interleaved Generation Task.}
+    \label{fig:inter_generation}
+    \vspace{-0.1in}
+\end{figure}
+
+\input{tab/intergen}
+
+\paragraph{InterGen Benchmark.} We primarily compare our model with Emu3.5~\citep{cui2025emu35nativemultimodalmodels}, as other models capable of interleaved generation (such as NextFlow~\citep{zhang2026nextflow} and Mogao~\citep{liao2025mogao}) are not yet open-source.
+%
+As shown in Table~\ref{table:inter_bench}, LLaDA2.0-Uni generally outperforms Emu3.5 on the InterGen benchmark.
+%
+Specifically, it achieves higher scores in the Story Telling and Time Series Forecasting tasks, while demonstrating comparable performance in Explanation.
+%
+More visualizations of the interleaved generation are shown in Figure~\ref{fig:inter_generation}.
+
+\begin{figure}[!t]
+    \centering
+    \vspace{-0.1in}
+    \includegraphics[width=1.0\linewidth]{figs/interleave_reasoning.pdf}
+    \vspace{-0.23in}
+    \caption{Qualitative Results on Interleaved Reasoning Task.}
+    \label{fig:inter_reason}
+    \vspace{-0.13in}
+\end{figure}
+
+\subsubsection{Interleaved Reasoning}
+Unified models have already achieved impressive results in standard image understanding and generation tasks.
+%
+Looking forward, exploring interleaved reasoning emerges as a critical bottleneck to overcome.
+%
+We believe this is an essential step toward building a strong synergy between visual generation and understanding.
+%
+In LLaDA 2.0-Uni, we conduct a preliminary exploration into interleaved reasoning capability.
+%
+As illustrated in Figure~\ref{fig:inter_reason}, through interleaved reasoning, our model successfully deduces logical strategies in in chess games and provides step-by-step solutions to physics problems.
+%
+These promising results give us great confidence to further expand interleaved reasoning capabilities in future research.
+
+
+\subsection{Ablation Study}
+\subsubsection{Analysis of SPRINT Acceleration} \label{sec:sprint_ablation}
+\input{tab/sprint}
+
+\subsubsection{Analysis of Diffusion Decoder} \label{sec:distilled_ablation}
+\input{tab/distilled}

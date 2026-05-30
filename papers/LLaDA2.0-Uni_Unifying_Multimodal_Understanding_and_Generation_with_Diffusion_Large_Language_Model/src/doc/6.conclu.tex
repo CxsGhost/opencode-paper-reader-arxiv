@@ -1,0 +1,17 @@
+\section{Conclusion and Future Directions}
+In this work, we introduce LLaDA2.0-Uni, a unified framework that enables both multimodal understanding and generation within a single diffusion large language model.
+%
+Built on the LLaDA 2.0 backbone, our approach uses a SigLIP-VQ tokenizer to map visual inputs into semantically rich discrete tokens, allowing text and images to be modeled in a shared space.
+%
+Extensive experiments show that LLaDA2.0-Uni achieves strong performance across various benchmarks, including multimodal understanding, image generation, and editing.
+%
+Furthermore, the model naturally supports interleaved generation and chain-of-thought reasoning, demonstrating the flexibility and practicality of our unified architecture.
+
+Despite these advancements, several areas remain for future improvement: 
+\begin{itemize}[leftmargin=16pt]
+    \item \textbf{Enhancing Visual Detail.} While the SigLIP-VQ tokenizer provides rich semantic information, it struggles to preserve fine-grained image details. Future work could focus on better reconstruction techniques to benefit detail-sensitive tasks like image editing.
+
+    \item \textbf{Scaling Interleaved Capabilities.} To fully unlock the model’s potential for complex interleaved generation and reasoning, further scaling of training data and model capacity is required.
+
+    \item \textbf{Reinforcement Learning.} Although we have begun exploring RL for unified dLLMs, optimizing its performance remains a challenge. We plan to further refine the RL framework in future versions and then release it to the community.   
+\end{itemize}

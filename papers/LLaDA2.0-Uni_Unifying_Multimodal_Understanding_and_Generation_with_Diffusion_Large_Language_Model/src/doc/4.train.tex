@@ -1,0 +1,179 @@
+\section{Model Training}
+\subsection{Training Recipe}
+Our training pipeline consists of three stages that progressively enhance model capabilities: foundational cross-modal alignment, multi-task pre-training, and supervised fine-tuning.
+Table~\ref{tab:foundational-stages} summarizes the data composition, token scale, and training configurations for each stage.
+
+
+\begin{table}[htbp]
+\centering
+\small 
+\caption{Overview of the Training Stages. This includes details on data composition, token scale, sequence length, and trainable components.}
+\label{tab:foundational-stages}
+\renewcommand{\arraystretch}{1.0}
+\resizebox{\linewidth}{!}{
+\begin{tabular}{cccc}
+\toprule
+\textbf{Stages\&Objective} & \textbf{S0: Vision-Language Alignment} & \textbf{S1: Multi-task Pre-training} & \textbf{S2: Supervised Fine-Tuning}  \\
+\midrule
+\textbf{\makecell[c]{Understanding\\Data}} & \makecell[c]{Image Caption, Text} & \makecell[c]{Image Caption, Text, \\ OCR, Grounding, \\ Counting, Video Data,\\ Multimodal VQA} & \makecell[c]{High-quality Multimodal VQA\\ High-quality Text QA \\ Interleaved Reasoning} \\
+\midrule
+\textbf{\makecell[c]{Generation\\Data}} & Text-to-image & \makecell[c]{Text-to-image \\ Image Editing \\ Interleaved Generation}& \makecell[c]{High-quality Image Generation \\ Image Generation with CoT\\ High-quality Image Editing\\ High-quality Interleaved Generation\\ Interleaved Reasoning}  \\
+\midrule
+\textbf{Gen. Resolution}& $256\rightarrow512$ & 512& 512~~(diffusion decoder $\rightarrow$ 1024)  \\
+\midrule
+\textbf{Under. Max Edge}& 800 & 800& 800  \\
+\midrule
+\textbf{Training Tokens} & 100B & 210B & 80B \\
+\midrule
+\textbf{Sequence length} & 8192 & 8192& $8192\rightarrow16384$\\
+\bottomrule
+\end{tabular}
+}
+\vspace{-0.15in}
+\end{table}
+
+\noindent
+\textbf{Stage 0: Vision–Language Alignment.} 
+The primary objective of stage 0 (S0) is to align visual and linguistic representations within the dLLM backbone.
+We use high-quality image–caption pairs and visual knowledge datasets, supplemented with pure text data to preserve language capabilities.
+During training, a random masking strategy is applied to a subset of text and image tokens: for generation tasks, only image tokens are masked; for understanding tasks, only text tokens are masked.
+To handle long visual token sequences, we adopt a progressive arbitrary resolution scheme: generation starts at $256 \times 256$ ($\sim$256 tokens) and transitions to $512 \times 512$ ($\sim$1024 tokens), while understanding consistently uses $800 \times 800$ with arbitrary resolution ($\sim$2048 tokens).
+
+
+
+\noindent
+\textbf{Stage 1: Multi-task Pre-training.} 
+The model is trained on diverse multimodal data to develop comprehensive understanding and generation capabilities.
+%
+Visual understanding data includes image–text interleaved data, OCR, and visual counting/grounding tasks. 
+Generation data includes image editing, subject-driven generation, controllable generation, style transfer using reference images, and multi-view generation tasks. 
+%
+This stage strengthens cross-modal connections and enables the model to handle increasingly complex tasks.
+
+\noindent
+\textbf{Stage 2: Supervised Fine-tuning.}
+The Supervised Fine-Tuning (SFT) process is conducted in two stages: an initial phase at 8k context length for fundamental instruction-following capabilities, followed by expansion to 16k context for complex visual reasoning and generation.
+
+
+\subsection{Pre-Training Optimization}
+We adopt the Block Diffusion Language Model (BDLM)~\citep{arriola2025block} training objective, which extends standard discrete diffusion by operating on block-level masked regions rather than individual tokens.
+%
+This design enables parallel decoding while maintaining coherent context within each block, making it well-suited for the variable-length sequences common in multimodal tasks.
+
+\noindent
+\textbf{BDLM Loss.}
+The training loss under the BDLM paradigm is defined as:
+\begin{equation}\label{eq:bdlm}
+    \mathcal{L}_{\text{BDLM}}(\theta) = - \mathbb{E}_{t, \bm{x}_0, \bm{x_t}} \left[ \frac{\alpha_{t}'}{1-\alpha_{t}}\sum_{k=1}^{K} \sum_{i=1}^{L_B} \mathbb{1}[x_{t,k}^i=\text{[MASK]}] \log p_{\theta}(\bm{x}_{0,k}^i | \bm{x}_{0,<k}, \bm{x}_{t,k}) \right],
+\end{equation}
+where the expectation is over timestep $t$, the clean sequence $\bm{x}_0$, and its corrupted version $\bm{x}_t$ (tokens masked with probability $1 - \alpha_t$). 
+The indicator $\mathbb{1}[\cdot]$ ensures predictions are made only for masked tokens, and $-\alpha'_t / (1 - \alpha_t)$ is the diffusion-derived time weight. 
+We define: $K = L_{\text{total}} / L_B$ as the number of blocks, $L_B$ as the block size, $x^i_{t,k}$ as the $i$-th token in block $k$, $\bm{x}_{0,<k}$ as the preceding clean blocks, and $\bm{x}_{t,k}$ as the noisy version of the current block.
+\looseness=-1
+
+\noindent
+\textbf{Load Balancing Strategy.}
+In MoE models, imbalanced expert utilization can lead to routing collapse.
+%
+We adopt an auxiliary-loss-free load balancing mechanism~\citep{deepseekv3} that promotes differentiated expert specialization while encouraging uniform workload distribution.
+%
+To improve numerical stability, we scale routing gate outputs by a factor of 2.5, stabilizing their root-mean-square (RMS) magnitude.
+%
+The auxiliary-loss-free bias is updated according to~\citep{sjl_moe}:
+\begin{equation}
+b_{i}=b_{i}+u\times \frac{(F_{i}-Q_{i})}{\sqrt{\frac{1}{n}\sum_{j=1}^{n}{(F_{j}-Q_{j})^2}}} \,,
+\end{equation}
+where $F=\mathbb{E}(f)$ denotes the current expert load distribution induced by the bias $b$, and $Q=[\frac{1}{n},\frac{1}{n},\dots,\frac{1}{n}]$ represents the ideal uniform distribution over $n$ experts. 
+This RMSNorm-style normalization smooths bias updates, leading to stable load balancing throughout training.
+
+\subsection{Supervised Fine-Tuning Optimization}
+During SFT, we adopt the same load balancing strategy while introducing complementary masking and a mask token reweighting loss to handle variable-length sequences.
+
+\noindent
+\textbf{Mask Token Reweighting Loss.}
+We adapt the BDLM objective to be conditional on an input prompt $c$:
+\begin{equation}\label{eq:bdlm}
+    \mathcal{L}_{\text{SFT}}(\theta) = - \mathbb{E}_{t, (c,\bm{x}_0), \bm{x_t}} \left[ \frac{\alpha_{t}'}{1-\alpha_{t}}\sum_{k=1}^{K} \sum_{i=1}^{L_B} \mathbb{1}[x_{t,k}^i=\text{[MASK]}] \log p_{\theta}(\bm{x}_{0,k}^i | c,\bm{x}_{0,<k}, \bm{x}_{t,k}) \right] \,.
+\end{equation}
+
+A key challenge in SFT is that sample lengths vary significantly---by up to two orders of magnitude.
+Naive token-averaged loss causes gradients to be dominated by long sequences, while sample-level averaging encourages brevity.
+We therefore propose a re-weighting mechanism to balance these extremes:
+\begin{equation}
+    \mathcal{L}_{\text{MTRS}} = \frac{\sum_{j} \beta_j \mathcal{L}_{\text{SFT}}^{(j)}}{\sum_{j} \beta_j} \,, \quad \text{where} \quad \beta_j = \frac{1}{\sqrt{\sum_{k=1}^{K} \sum_{i=1}^{L_B} \mathbb{1}[x_{t,k}^{i,(j)}=\text{[MASK]}]}} \,.
+\end{equation}
+The scaling factor $\beta_j$ is the inverse square root of the number of masked tokens in sample $j$, equilibrating gradient contributions across diverse response lengths.
+
+\noindent
+\textbf{Complementary Masking.}
+Complementary masking~\citep{li2025lavida} is a strategy to enhance data efficiency for dLLMs by constructing two antithetical training instances from a single sequence $x_0$: a primary noised sequence $x_t$ and a complementary sequence $x'_t$ using the inverse mask.
+This design ensures that every token position appears uncorrupted exactly once per pair, thereby doubling effective information utilization and eliminating token-level sampling bias.
+We adapt this strategy in our framework.
+
+
+
+\subsection{Diffusion Decoder Training}
+\label{sec:decoder_training}
+\paragraph{Training Paradigm.} 
+We optimize the diffusion decoder via the standard flow matching objective~\citep{lipman2022flow}. The overall training trajectory is decoupled into a preliminary warm-up followed by a progressive two-stage fine-tuning scheme. The flow matching loss is formulated as:
+\begin{equation}
+    \mathcal{L}_{\text{FM}}(\theta) = \mathbb{E}_{\bm{x}_0, \bm{x}_1, \bm{z}, t} \left[ \| \bm{v}_{\theta,t}(\bm{x}_t, \bm{z}) - \bm{v}_{t} \|^2_2 \right],
+\end{equation}
+where $\bm{z}$ represents the conditioned semantic visual tokens, $\bm{v}_{\theta,t}$ denotes the velocity field predicted by the network at timestep $t$, and $\bm{v}_{t}$ is the target velocity. 
+The overall training process is divided into three stages:
+\begin{itemize}[leftmargin=16pt]
+    \item \textbf{Stage 1: Warm-up.} We freeze the semantic processor and update only the remaining modules to establish cross-modal alignment while preserving pre-trained priors.
+
+    \item \textbf{Stage 2: Multi-domain Generalization.} Following the warm-up, we unfreeze all parameters and
+    fine-tune on diverse domains for robust generalization.
+
+    \item \textbf{Stage 3: High-fidelity Refinement.} 
+    In the final stage, we refine on high-quality data to elevate aesthetic fidelity and fine-grained visual details.
+\end{itemize}
+
+\paragraph{Few-step Generation.}
+To accelerate visual generation, we adopt a lightweight consistency-based distillation framework~\citep{sun2026duality} for the diffusion decoder.
+This method requires only an auxiliary projection layer---a final additional layer added to the decoder backbone---which will be discarded at inference time.
+The distillation objective combines flow matching with a consistency term:
+\looseness=-1
+\begin{equation}
+    \mathcal{L}_{\text{Distill}}(\theta) = 
+    \mathbb{E}_{\bm{x}_0, \bm{z}, t} \left[ \| \bm{v}_{\theta,t} - \bm{v}_{t} \|^2_2 + \| \bm{u}_{\theta,t} - \bm{v}_{t} + t \cdot \frac{\text{d}\bm{u}_{\theta^-,t}}{\text{d}t} \|^2_2 \right], \text{where} \,\, \bm{u}_{\theta^-,t}=\text{stop\_grad(}\bm{u}_{\theta,t}\text{)} \,,
+    \label{distill_loss}
+\end{equation}
+where $\bm{v}_{t}$ is the target velocity, $\bm{v}_{\theta,t}, \bm{u}_{\theta,t}$ are the dual outputs of the diffusion decoder.
+% and the time derivative $\nicefrac{\text{d}\bm{u}_{\theta^-,t}}{\text{d}t}$ is a Jacobian-vector product (JVP)~\citep{lu2024simplifying} output of the diffusion decoder.
+The time derivative $\nicefrac{\text{d}\bm{u}_{\theta^-,t}}{\text{d}t}$ is a Jacobian-vector product (JVP)~\citep{lu2024simplifying} output of the diffusion decoder, where the JVP calculation is approximated using the second-order difference technique proposed in UCGM~\citep{sun2025unified}.
+This strategy enables 8-step CFG-free inference while maintaining high image quality.
+
+\begin{figure}[htb]
+    \centering
+    \vspace{-0.15in}\includegraphics[width=0.85\linewidth]{figs/packing.pdf}
+    \vspace{-0.05in}
+    \caption{
+    Data Packing Strategy for Efficient Training. Multiple shorter samples are concatenated into fixed-length sequences, minimizing padding tokens and improving GPU utilization.
+    }
+    \label{fig:pack}
+    \vspace{-0.1in}
+\end{figure}
+\subsection{Infrastructure for Training Efficiency}
+%
+\noindent
+\textbf{Image Tokens Pre-extraction.} 
+LLaDA2.0-Uni employs a Vector Quantized (VQ) tokenizer to transform images into discrete visual tokens, incurring substantial computational cost during training.
+%
+We adopt an offline pre-extraction strategy: prior to training, the entire dataset is processed through the frozen tokenizer, with token indices stored on disk.
+%
+During training, the data loader retrieves pre-extracted tokens directly, eliminating repeated encoder passes and significantly accelerating the pipeline.
+
+\noindent
+\textbf{Load Balancing via Data Packing.}
+In LLaDA2.0-Uni, sequence lengths vary significantly across multimodal tasks (e.g., short text-only tasks versus long image-generation tasks).
+Traditional batching strategy requires extensive padding to match the longest sequence, wasting computation on padding tokens.
+We address this with an offline data packing strategy that consolidates multiple shorter samples into fixed-length sequences (Figure~\ref{fig:pack}), significantly increasing effective token throughput for both pre-training and post-training.
+
+
+\noindent
+\textbf{Distributed Framework.}
+We employ dFactory~\citep{dFactory} as the primary training engine for both pre-training and post-training phases---a high-efficiency framework specifically optimized for Diffusion Large Language Models. 
+Built upon the VeOmni~\citep{ma2025veomni} distributed training ecosystem, dFactory enables the flexible deployment of sophisticated parallelization strategies. 

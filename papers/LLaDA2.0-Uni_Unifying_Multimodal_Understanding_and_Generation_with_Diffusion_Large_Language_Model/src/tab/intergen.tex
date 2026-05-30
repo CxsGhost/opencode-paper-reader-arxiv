@@ -1,0 +1,22 @@
+\begin{table}[t]
+\centering
+\renewcommand{\arraystretch}{1.2}
+\setlength\tabcolsep{2pt}
+\small
+\newcolumntype{C}{>{\centering\arraybackslash}X}
+
+\caption{Comparison of Interleaved Generation Ability on InterGen Benchmark.}
+\begin{tabularx}{\linewidth}{cc| *{2}{C} | *{2}{C} |  *{2}{C}} 
+\toprule
+\multirow{2}{*}{\textbf{Model}} & \multirow{2}{*}{\textbf{Arch.}} & \multicolumn{2}{c|}{\textbf{Story Telling}} & \multicolumn{2}{c|}{\textbf{Explanation}} & \multicolumn{2}{c}{\textbf{Event Forecasting}} \\
+% \cmidrule(lr){4-6} \cmidrule(lr){7-9}
+& & \textbf{Gemini$\uparrow$} & \textbf{Qwen3-VL$\uparrow$} & \textbf{Gemini$\uparrow$} & \textbf{Qwen3-VL$\uparrow$} & \textbf{Gemini$\uparrow$} & \textbf{Qwen3-VL$\uparrow$}\\
+\midrule
+
+Emu3.5 & AR + Diff.  &6.28 & 6.83 &6.19 &6.48 &5.08  & 5.75  \\
+\rowcolor{myblue}
+LLaDA2.0-Uni & D-Diff. + Diff. 	&6.42 &7.02 &6.22 &6.35 &5.19	&5.94\\
+\bottomrule
+\end{tabularx}
+\label{table:inter_bench}
+\end{table}

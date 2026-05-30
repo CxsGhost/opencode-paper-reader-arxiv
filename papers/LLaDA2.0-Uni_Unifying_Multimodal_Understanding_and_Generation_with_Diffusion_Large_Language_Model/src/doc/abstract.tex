@@ -1,0 +1,56 @@
+\begin{abstract}
+We present LLaDA2.0-Uni, a unified discrete diffusion large language model (dLLM) that supports multimodal understanding and generation within a natively integrated framework. 
+%
+Its architecture combines a fully semantic discrete tokenizer, a MoE-based dLLM backbone, and a diffusion decoder. 
+%
+By discretizing continuous visual inputs via SigLIP-VQ, the model enables block-level masked diffusion for both text and vision inputs within the backbone, while the decoder reconstructs visual tokens into high-fidelity images. 
+%
+Inference efficiency is enhanced beyond parallel decoding through prefix-aware optimizations in the backbone and few-step distillation in the decoder. 
+%
+Supported by carefully curated large-scale data and a tailored multi-stage training pipeline, LLaDA2.0-Uni matches specialized VLMs in multimodal understanding while delivering strong performance in image generation and editing. 
+%
+Its native support for interleaved generation and reasoning establishes a promising and scalable paradigm for next-generation unified foundation models.
+
+\begin{center}
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabular}{rll}
+        \github{} & \textbf{GitHub} & \url{https://github.com/inclusionAI/LLaDA2.0-Uni} \\
+        \hf{} & \textbf{HuggingFace Model} & \url{https://huggingface.co/inclusionAI/LLaDA2.0-Uni} 
+    \end{tabular}
+\end{center}
+
+
+
+\end{abstract}
+
+% \vspace{-1.ex}
+\begin{figure}[htb!]
+    \centering
+    \vspace{-0.2in}
+    \includegraphics[width=0.95\linewidth]{figs/performance_compare.pdf} 
+    \vspace{-0.05in}
+    \caption{Benchmark Performance of LLaDA2.0-Uni.}
+    \label{fig:main}
+\end{figure}
+
+
+\newpage
+\begin{figure}[H]
+  \vspace{-0.88in}
+  \hspace{-0.05in}
+  \includegraphics[width=1.0\textwidth]{figs/demo1-v3.pdf}
+  \caption{Showcases of LLaDA2.0-Uni in High-Fidelity Image Generation.}
+  \label{fig:showcase_realistic}
+\end{figure}
+\newpage
+
+\begin{figure}[H]
+  \vspace{-0.88in}
+  \hspace{-0.05in}
+  \includegraphics[width=1.0\textwidth]{figs/demo2-v3.pdf}
+  \vspace{-0.27in}
+  \caption{Showcases of LLaDA2.0-Uni in Single/Multi-Reference Editing, Interleaved Generation and Reasoning. Note: For editing tasks, the original image is positioned on the left or top.}
+  \label{fig:showcase_editing_interleaved}
+\end{figure}
+
+\clearpage

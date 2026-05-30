@@ -1,0 +1,112 @@
+\documentclass[]{antgroup}
+\PassOptionsToPackage{numbers, compress}{natbib}
+\usepackage{antgroup}
+
+% Require Package
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{todonotes}
+\usepackage{multirow}
+\usepackage{amsmath}
+\usepackage{cleveref}
+\usepackage{subcaption}
+\usepackage{multicol}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{bm}
+\usepackage{enumitem}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{tabularx}
+\usepackage{bbm}
+\usepackage{makecell}
+\usepackage{threeparttable}
+% 支付宝蓝色
+\definecolor{title_blue}{HTML}{1677FF} 
+\definecolor{cite_blue}{HTML}{044dc1}
+\usepackage{colortbl}
+
+\usepackage[normalem]{ulem}
+\useunder{\uline}{\ul}{}
+
+\usepackage{multirow}
+
+\input{math_commands}
+\input{setting-ai}
+
+\usepackage{xcolor}
+\definecolor{firstcolor}{HTML}{C3423F}
+\definecolor{secondcolor}{HTML}{2A4B8C}
+\definecolor{myblue}{HTML}{D9E6FF}
+
+\newcommand{\first}[1]{\textcolor{firstcolor}{\textbf{#1}}}
+\newcommand{\second}[1]{\textcolor{secondcolor}{\textbf{#1}}}
+\newcommand{\github}{\raisebox{-1.5pt}{\includegraphics[height=1.05em]{logo/github.png}}}
+\newcommand{\hf}{\raisebox{-1.5pt}{\includegraphics[height=1.05em]{logo/hf.png}}}
+\renewcommand\thefootnote{}
+
+\usepackage{tocloft}
+% 调整子节（subsection）条目之间的垂直间距
+% \setcounter{tocdepth}{3}
+\setlength{\cftbeforesecskip}{5pt}
+\setlength{\cftbeforesubsecskip}{4pt} % 数值越大，2.1和2.2之间的上下间距越大
+\setlength{\cftbeforesubsubsecskip}{4pt}
+
+\title{LLaDA2.0-Uni: Unifying Multimodal Understanding and Generation with Diffusion Large Language Model}
+
+\author{
+% AGI Research Center, Inclusion AI
+\centering
+Tiwei Bie,
+Haoxing Chen,
+Tieyuan Chen,
+Zhenglin Cheng,
+Long Cui,
+Kai Gan,
+Zhicheng Huang\\
+Zhenzhong Lan$^{\dag}$,
+Haoquan Li,
+Jianguo Li$^{\dag}$,
+Tao Lin$^{\dag}$,
+Qi Qin,
+Hongjun Wang,
+Xiaomei Wang\\
+Haoyuan Wu,
+Yi Xin, 
+Junbo Zhao
+}
+
+\footnotetext{Authors are listed in alphabetical order based on last name. $\dag$ indicates tech-leaders.}
+
+\affiliation{AGI Research Center, Inclusion AI}
+
+
+\begin{document}
+\maketitle
+
+% main document
+\input{doc/abstract}
+
+
+
+% \section*{Contents}
+% \makeatletter
+% \@starttoc{toc}
+% \makeatother
+
+\newpage
+\input{doc/1.introduction}
+\input{doc/2.model}
+\input{doc/3.data}
+\input{doc/4.train}
+\input{doc/5.exp}
+\input{doc/6.conclu}
+
+
+%reference
+\clearpage
+\bibliographystyle{antgroup}
+\bibliography{ref/reference}
+
+\end{document}

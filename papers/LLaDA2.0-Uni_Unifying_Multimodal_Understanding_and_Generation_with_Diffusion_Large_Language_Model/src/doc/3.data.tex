@@ -1,0 +1,99 @@
+\section{Data Preparation}
+\subsection{Multimodal Understanding}
+\paragraph{Pretrain Data Source \& Processing.} 
+In the pre-training stage, the model learns to perceive images through text supervision.
+%
+We collect extensive image-captioning data from open-source datasets~\citep{LLaVA-OneVision-1.5,Penguin-VL}, supplemented by specialized categories:
+%
+\begin{itemize}[leftmargin=16pt]
+    \item \textbf{OCR Data.} We develop a coarse-to-fine pipeline to produce millions of samples. By combining PaddleOCR~\citep{Paddleocr} pseudo-labels with refinements from Qwen3-VL, we achieve high-quality document understanding data without manual annotation.
+
+    \item \textbf{Grounding \& Counting Data.} Using Objects365~\citep{Objects365} and RefCOCO~\citep{yu2016modeling,openimages,kazemzadeh2014referitgame}, we refine spatial data through detection confidence filtering and Qwen3-VL-235B-A22B \citep{team2025qwen3VL} verification. 
+    Coordinates are normalized to [0, 1000] for stability, and counting data is automatically derived from verified bounding boxes.
+
+    \item \textbf{World Knowledge \& Reasoning.} We curate data across three domains: general world knowledge, logical reasoning, and mathematics.
+
+    \item \textbf{Text Data.} High-quality text-only data is sourced from Ling2.0~\citep{Ling2} and LLaDA2.0~\citep{LLaDA2}, covering general knowledge, code, and mathematics.
+\end{itemize}
+
+\paragraph{SFT Data Source \& Processing.} 
+Our SFT dataset contains approximately 60 million samples with a 1:5 ratio of text-only to multimodal data.
+%
+This collection covers single/multi-turn dialogues and single/multi-image scenarios across various tasks, including General VQA, Chart/Table QA, mathematical reasoning, etc.
+%
+We implement a two-stage filtering pipeline for quality control:
+(1) \textbf{Query Filtering:} Qwen3-VL audits the input space, pruning vague or low-information instructions while rewriting ambiguous queries to enhance semantic clarity.
+%
+(2) \textbf{Response Filtering:} Rule-based heuristics rectify structural artifacts, and GPT-OSS~\citep{agarwal2025gpt} filters semantic biases while ensuring alignment with ground-truth references.
+
+\subsection{Image Generation}
+\paragraph{Data Source.}
+We collect over 200 million web images with their original text descriptions.
+%
+To improve performance on challenging generation tasks, we specifically increased the proportion of images featuring human body and rendered text.
+%
+Since image generation requires higher visual quality than understanding, all data undergoes rigorous filtering.
+
+\paragraph{Filtering Pipeline.}
+We apply a three-stage cleaning process:
+%
+(1) \textbf{Metadata filtering} removes low-resolution images (less than 512 pixels on the shortest side) and highly compressed images ($(\text{Height} \times \text{Width}) / \text{Filesize} < 0.15$).
+%
+(2) \textbf{Aesthetics filtering} discards images with ArtiMuse~\citep{cao2025artimusefinegrainedimageaesthetics} scores below 60.
+%
+(3) \textbf{Quality filtering} eliminates images with DeQA-Score~\citep{deqa_score} under 4.0.
+%
+After filtering, 140 million high-quality images are retained.
+
+\paragraph{Image Captioning.} 
+We generate captions using Qwen3-VL-235B-22B.
+%
+To retain real-world knowledge, the VLM evaluates the original web text: if informative, it incorporates this information into the caption (e.g., using ``Corgi Dog'' instead of a generic ``dog''), producing richer and more accurate descriptions.
+
+
+
+\subsection{Image Editing}
+\paragraph{Data Source.} 
+Our image editing data combines open-source datasets and synthesized pairs.
+%
+We incorporate X2Edit~\citep{ma2026x2edit}, OmniEdit~\citep{wei2024omniedit}, Nano-consistent-150k~\citep{ye2025echo}, Pico-Banana~\citep{qian2025pico}, UniWorld~\citep{lin2025uniworld}, StructVisuals~\citep{zhuo2025factuality}, UnicEdit~\citep{ye2025unicedit}, and CrispEdit~\citep{chow2025editmgt}.
+%
+We also synthesize high-fidelity editing pairs by processing images from our generation dataset through an automated pipeline, further expanding data diversity while ensuring consistency between generation and editing tasks.
+
+\paragraph{Instruction Refinement.}
+We use Qwen3-VL-235B-22B for quality control.
+%
+First, we filter out ``failed'' samples where editing produces no observable change or introduces visual artifacts. 
+%
+Second, for high-quality transformations with inaccurate or vague instructions, the VLM rewrites instructions based on actual visual changes.
+%
+This ensures both visual integrity and precise instruction-image alignment.
+
+
+\subsection{Interleaved Data}
+\paragraph{Data Source \& Filtering.} 
+We construct interleaved image-text data from the Koala36M~\citep{wang2025koala} video corpus through strict filtering:
+%
+(1) Duration filtering discards clips longer than 30 seconds or shorter than 10 seconds to minimize fragmentation errors.
+%
+(2) Quality filtering retains the top 50\% by aesthetic score ($>$ 4.0) and clarity ($>$ 0.7).
+%
+(3) Motion filtering requires a motion score greater than 4 to avoid degenerate solutions where the model generates static images.
+%
+This pipeline removes approximately 75\% of raw data, yielding 6M refined clips free from blur, static scenes, and low-aesthetic content.
+%
+We sample frames every 5 seconds, producing interleaved sequences of 2--6 frames.
+
+
+\paragraph{Interleaved Captioning.} 
+We use Qwen3-VL-235B-A22B to generate detailed descriptions of actions and scene changes from frame sequences.
+%
+Additionally, we generate user instructions tailored to these sequences, providing high-quality instruction-following data for SFT.
+
+
+\subsection{Reasoning-Augmented Data}
+To equip LLaDA2.0-Uni with reasoning capabilities, we incorporate a dedicated dataset comprising two components: reasoning-based image generation and interleaved reasoning.
+%
+We source this data from Flux-6M~\citep{fang2025flux}, Zebra-CoT~\citep{li2026zebracot}, and Weave~\citep{weave2024}, totaling approximately 8M samples for SFT.
+%
+This data enables chain-of-thought reasoning before image generation and multi-step reasoning across interleaved image-text sequences.
