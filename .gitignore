@@ -1,0 +1,41 @@
+# === LaTeX Compilation Artifacts ===
+*.aux
+*.log
+*.out
+*.toc
+*.bbl
+*.blg
+*.synctex.gz
+*.fdb_latexmk
+*.fls
+*.pdf
+
+# === Archive Files ===
+*.tar.gz
+*.zip
+*.tar
+
+# === IDE & Editor ===
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# === OS Files ===
+.DS_Store
+Thumbs.db
+
+# === Temporary Files ===
+*.tmp
+*.temp
+
+# === Python (if used later) ===
+__pycache__/
+*.pyc
+*.pyo
+.env
+.venv/
+
+# === Node (if used later) ===
+node_modules/
