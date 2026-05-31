@@ -5,10 +5,12 @@
 ## 特性
 
 - 🔍 自动搜索并定位 arXiv 论文
+- ♻️ **本地缓存检查**：已分析过的论文会直接复用，避免重复下载
 - 📥 下载 LaTeX 源码（而非 PDF）
 - 🧠 AI 生成详细的中文论文摘要
 - 💾 GitHub 自动备份
 - 💬 支持基于论文内容的深度讨论
+- 📝 **讨论日志自动记录**：所有问答保存在 `analysis_report/discussion_log.md`，公式渲染更清晰
 
 ## 快速开始
 
@@ -51,11 +53,12 @@ git remote -v
 ```
 
 Agent 将自动完成以下流程：
-1. 在 arXiv 上定位论文
-2. 下载 LaTeX 源码
-3. 生成中文详细摘要
-4. 推送到 GitHub 备份
-5. 等待您阅读后进一步提问
+1. 在 arXiv 上定位论文，确认论文信息
+2. **检查本地缓存**：若 `papers/{title}/analysis_report/summary.md` 已存在，直接读取摘要并告知“该论文已存在于本地”，**跳过下载、分析、Git 提交，直接进入步骤 5**
+3. 若论文不在本地，下载 LaTeX 源码
+4. 生成中文详细摘要，保存至 `analysis_report/summary.md`
+5. 推送到 GitHub 备份
+6. 等待您阅读后进一步提问
 
 ## 项目结构
 
@@ -70,15 +73,20 @@ opencode-paper-reader-arxiv/
 │   └── paper-title/
 │       ├── src/           # LaTeX 源码
 │       └── analysis_report/
+│           ├── summary.md         # 论文中文摘要
+│           └── discussion_log.md  # 用户问答记录
 └── .gitignore             # Git 忽略配置
 ```
 
 ## 工作流详情
 
-### 1. 论文识别
-- 根据标题搜索 arXiv
-- 或直接使用 arXiv ID
-- 处理同名论文冲突（询问用户）
+### 1. 论文识别 & 本地缓存检查
+- 根据标题搜索 arXiv，或直接使用 arXiv ID
+- 处理同名论文冲突（询问用户确认）
+- **确认后自动检查本地缓存**：
+  - 若 `papers/{sanitized_title}/analysis_report/summary.md` 存在，直接加载已有摘要，跳过下载和重新分析
+  - 若用户提供了 arXiv ID，也会尝试查找 `papers/paper_{arxiv_id}/analysis_report/summary.md`
+  - 已存在的论文直接进入 **步骤 5**，立即投入讨论
 
 ### 2. 下载源码
 - 从 `https://arxiv.org/src/{id}` 使用 Python `requests` 下载 LaTeX 源码（避免 curl 被拦截）
@@ -99,10 +107,13 @@ AI 阅读 LaTeX 源码后，生成包含以下内容的中文摘要：
 - 自动提交并推送到 GitHub
 - 每篇论文独立提交
 
-### 5. 后续讨论
-- 基于论文内容回答问题
-- 生成补充分析文档
-- 所有内容保存在 `analysis_report/` 中
+### 5. 后续讨论 & 日志记录
+- 基于论文内容回答问题，需要时重新查阅 `.tex` 源码
+- 生成补充分析文档并保存到 `analysis_report/`
+- **每次问答自动追加到 `analysis_report/discussion_log.md`**（按 `YYYY-MM-DD` 和 `HH:MM` 分组），方便：
+  - 保留讨论历史，随时回顾
+  - 在 Markdown 中正确渲染 LaTeX 公式
+  - 离线查看与检索
 
 ## 辅助脚本
 
@@ -124,6 +135,7 @@ python scripts/download_arxiv.py 2512.15745 ./papers
 - 所有 AI 生成的内容均为中文
 - 使用 HTTPS 进行 Git 操作（无需 SSH 密钥配置）
 - 某些论文可能没有 LaTeX 源码，此时会回退到 PDF 分析
+- 本地缓存检查依赖目录名一致性，请确保论文标题的清洗规则未被手动改动
 
 ## 兼容性
 
