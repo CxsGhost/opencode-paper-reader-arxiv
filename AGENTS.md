@@ -1,6 +1,6 @@
 # Paper Reader Skill for arXiv
 
-> **Version**: 1.0.0
+> **Version**: 1.1.0
 > **Purpose**: Automated arXiv paper reading workflow with AI-powered analysis
 > **Language**: All outputs in Chinese (中文)
 > **Scope**: arXiv platform only
@@ -39,6 +39,17 @@ If arXiv ID is provided:
 - Validate the format (usually `XXXX.XXXXX` or `XXXX`)
 - Proceed directly to Step 2
 
+**Local Cache Check** (before downloading):
+After identifying the paper (and before proceeding to download), check if it already exists locally:
+1. Sanitize the paper title to form the expected directory name (using the rules in Step 2)
+2. Check if `papers/{sanitized_title}/analysis_report/summary.md` exists
+3. If user provided an arXiv ID, also check for `papers/paper_{arxiv_id}/analysis_report/summary.md`
+4. **If found**: Read the existing `summary.md`, present it to the user with a note:
+   > "该论文已存在于本地，以下是已有的分析摘要。您可以直接提问，或要求重新下载和分析。"
+   - Skip Step 2, 3, and 4
+   - Go directly to **Step 5: Follow-up Discussions**
+5. **If not found**: Proceed to Step 2 to download and analyze
+
 **Constraints**:
 - Only process papers from arXiv platform
 - Do NOT process other platforms (OpenReview, etc.)
@@ -46,6 +57,8 @@ If arXiv ID is provided:
 ---
 
 ### Step 2: Download LaTeX Source
+
+> **Only execute this step if the paper was NOT found in the local cache during Step 1.**
 
 **Source URL Pattern**: `https://arxiv.org/src/{arxiv_id}`
 
@@ -134,6 +147,26 @@ After the user reads the summary:
 - Reference the original LaTeX source when answering
 - Generate additional analysis documents if requested (e.g., methodology deep-dive, comparison with other works)
 - Save any new documents to `analysis_report/`
+
+**Discussion Logging** (记录问答):
+For every user question and your answer:
+1. Append the exchange to `analysis_report/discussion_log.md`
+2. If the file does not exist, create it first
+3. Use the following Markdown format:
+   ```markdown
+   ## 讨论记录 - YYYY-MM-DD
+
+   ### HH:MM
+
+   **用户问：** [用户问题原文]
+
+   **回答：**
+   [你的详细回答，包含公式、引用、代码块等]
+   ```
+4. **Purpose**: 
+   - Preserve conversation history for future reference
+   - Mathematical formulas and complex expressions render correctly in markdown files, unlike the chat window
+   - Enables users to review previous discussions offline
 
 **Constraints**:
 - Always base answers on the actual paper content
